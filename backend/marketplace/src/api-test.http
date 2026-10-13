@@ -1,0 +1,31 @@
+### 1. Register a new user with all required fields
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "studentId": "S123456",
+  "email": "student1@example.com",
+  "password": "securepassword123",
+  "fullName": "John Doe"
+}
+
+### 2. Login to get the JWT token
+# (Save the token value from the response body)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "student1@example.com",
+  "password": "securepassword123"
+}
+
+### 3. Test a public route (Should work without a token)
+GET http://localhost:8080/api/faculties
+
+### 4. Test a protected route WITHOUT a token (Should return 401 Unauthorized)
+GET http://localhost:8080/api/profile
+
+### 5. Test a protected route WITH a token
+# Replace YOUR_JWT_TOKEN_HERE with the actual token you got from the login response
+GET http://localhost:8080/api/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzdHVkZW50MUBleGFtcGxlLmNvbSIsInVzZXJJZCI6MSwiaWF0IjoxNzkxOTAxNTM2LCJleHAiOjE3OTE5ODc5MzZ9.EXLgzC4S7eQOoFHDeBdbQNUA7aGBpf1tlTJgx7-F9yU
