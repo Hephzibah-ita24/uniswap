@@ -1,11 +1,20 @@
-   ### Register
-   POST http://localhost:8080/api/auth/register
-    Content-Type: application/json
+### Register
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
 
-   {"studentId":"S1","email":"a@b.com","password":"password123","fullName":"Test User","facultyId":1}
+{"studentId":"S1","email":"a@b.com","password":"password123","fullName":"Test User","facultyId":9}
 
-   ### Login
-   POST http://localhost:8080/api/auth/login
-   Content-Type: application/json
+### Login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
 
-   {"email":"a@b.com","password":"password123"}
+{"email":"a@b.com","password":"password123"}
+
+### All listings
+GET http://localhost:8080/api/listings
+
+### Filtered listings
+GET http://localhost:8080/api/listings?facultyId=9&condition=GOOD&minPrice=10&maxPrice=20&sort=price_asc
+
+### One listing
+GET http://localhost:8080/api/listings/1
