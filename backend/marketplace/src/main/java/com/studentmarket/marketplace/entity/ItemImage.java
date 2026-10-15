@@ -23,4 +23,8 @@ public class ItemImage {
     public Long getId() { return id; }
     public String getImageUrl() { return imageUrl; }
     public Boolean getPrimary() { return primary; }
+
+    public void setListing(Listing listing) { this.listing = listing; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setPrimary(Boolean primary) { this.primary = primary; }
 }

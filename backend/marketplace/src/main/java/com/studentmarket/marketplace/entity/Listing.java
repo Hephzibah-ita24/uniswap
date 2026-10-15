@@ -43,7 +43,7 @@ public class Listing {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "listing")
+    @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemImage> images = new ArrayList<>();
 
     public Long getId() { return id; }
@@ -57,4 +57,13 @@ public class Listing {
     public String getItemCondition() { return itemCondition; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public List<ItemImage> getImages() { return images; }
+
+    public void setSeller(User seller) { this.seller = seller; }
+    public void setFaculty(Faculty faculty) { this.faculty = faculty; }
+    public void setCategory(Category category) { this.category = category; }
+    public void setTitle(String title) { this.title = title; }
+    public void setDescription(String description) { this.description = description; }
+    public void setPrice(BigDecimal price) { this.price = price; }
+    public void setStatus(String status) { this.status = status; }
+    public void setItemCondition(String itemCondition) { this.itemCondition = itemCondition; }
 }
