@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.studentmarket.marketplace.entity.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/api/listings")
@@ -38,14 +40,15 @@ public class ListingController {
     }
     @PostMapping
     public ResponseEntity<ListingResponse> create(@Valid @RequestBody CreateListingRequest req,
-                                                  Authentication auth) {
+                                                  @AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(listingService.create(auth.getName(), req));
+                .body(listingService.create(user.getEmail(), req));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Long id, Authentication auth) {
-        listingService.delete(auth.getName(), id);
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id,
+                                       @AuthenticationPrincipal User user) {
+        listingService.delete(user.getEmail(), id);
         return ResponseEntity.noContent().build();
     }
 }

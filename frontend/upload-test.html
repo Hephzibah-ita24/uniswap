@@ -32,8 +32,6 @@ const SUPABASE_KEY = "sb_publishable_ViRAP5QY8BFFiPH_SkXglw_sfS4ck8A";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-
-
 document.getElementById("btn").onclick = async () => {
 
 const file = document.getElementById("file").files[0];
@@ -43,7 +41,6 @@ if (!file) return;
 const ext = file.name.split(".").pop();
 
 const path = Date.now() + "-" + Math.random().toString(36).slice(2) + "." + ext;
-
 
 
 const { error } = await client.storage
