@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uniswap - Sell an item</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <a class="logo" href="browse.html">Uniswap</a>
+    <div>
+      <a href="browse.html">Browse</a>
+      <a href="create-listing.html">Sell</a>
+      <a href="#" id="logoutLink">Logout</a>
+    </div>
+  </div>
+
+  <div class="form-box" style="max-width:520px;">
+    <h2>Sell an item</h2>
+
+    <label>Title</label>
+    <input type="text" id="title" placeholder="e.g. Calculus textbook">
+
+    <label>Description</label>
+    <textarea id="description" rows="4" placeholder="Condition, edition, anything buyers should know"></textarea>
+
+    <label>Price</label>
+    <input type="number" id="price" min="0" step="0.01" placeholder="0.00">
+
+    <label>Category</label>
+    <select id="category"><option value="">Loading...</option></select>
+
+    <label>Faculty</label>
+    <select id="faculty"><option value="">Loading...</option></select>
+
+    <label>Photos (up to 5)</label>
+    <input type="file" id="photos" accept="image/*" multiple>
+
+    <button class="btn" id="submitBtn">Post listing</button>
+    <p class="error" id="error"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/create-listing.js"></script>
+</body>
+</html>
