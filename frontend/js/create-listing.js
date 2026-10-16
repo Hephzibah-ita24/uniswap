@@ -45,12 +45,14 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
   const categoryId = document.getElementById("category").value;
   const facultyId = document.getElementById("faculty").value;
   const files = Array.from(document.getElementById("photos").files).slice(0, 5);
+  const itemCondition = document.getElementById("condition").value;
 
   errorBox.textContent = "";
 
   if (!title) { errorBox.textContent = "Please enter a title."; return; }
   if (!(price > 0)) { errorBox.textContent = "Price must be greater than 0."; return; }
   if (!categoryId || !facultyId) { errorBox.textContent = "Please choose a category and a faculty."; return; }
+  if (!itemCondition) { errorBox.textContent = "Please choose the item condition."; return; }
 
   btn.disabled = true;
   btn.textContent = "Posting...";
@@ -69,6 +71,7 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
         price,
         categoryId: Number(categoryId),
         facultyId: Number(facultyId),
+        itemCondition,
         imageUrls
       })
     });
