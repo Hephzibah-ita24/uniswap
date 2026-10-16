@@ -17,6 +17,8 @@
     <input type="email" id="email">
     <label>Password</label>
     <input type="password" id="password">
+    <label for="studentId">Student ID</label>
+    <input type="text" id="studentId" required>
     <label>Faculty</label>
     <select id="faculty">
       <option value="">Loading faculties...</option>
@@ -49,25 +51,26 @@
     loadFaculties();
 
     document.getElementById("registerBtn").addEventListener("click", async () => {
-      const name = document.getElementById("name").value.trim();
+      const fullName = document.getElementById("name").value.trim();
+      const studentId = document.getElementById("studentId").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       const facultyId = document.getElementById("faculty").value;
       const errorBox = document.getElementById("error");
 
-      if (!name || !email || !password || !facultyId) {
+      if (!fullName || !studentId || !email || !password || !facultyId) {
         errorBox.textContent = "Please fill in all fields.";
         return;
       }
-      if (password.length < 6) {
-        errorBox.textContent = "Password must be at least 6 characters.";
+      if (password.length < 8) {
+        errorBox.textContent = "Password must be at least 8 characters.";
         return;
       }
 
       try {
         await apiFetch("/auth/register", {
           method: "POST",
-          body: JSON.stringify({ name, email, password, facultyId: Number(facultyId) })
+          body: JSON.stringify({ studentId, fullName, email, password, facultyId: Number(facultyId) })
         });
         window.location.href = "login.html";
       } catch (e) {
