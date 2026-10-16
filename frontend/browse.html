@@ -1,2 +1,74 @@
-mkdir frontend
-mkdir frontend/css frontend/js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uniswap - Browse</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="navbar">
+    <a class="logo" href="browse.html">Uniswap</a>
+    <div>
+      <a href="browse.html">Browse</a>
+      <a href="create-listing.html">Sell</a>
+      <a href="#" id="logoutLink">Logout</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <label for="facultyFilter">Faculty</label>
+    <select id="facultyFilter"><option value="">All faculties</option></select>
+    <p class="error" id="error"></p>
+    <div class="grid" id="listings" style="margin-top:16px;"></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    requireLogin();
+    document.getElementById("logoutLink").addEventListener("click", (e) => { e.preventDefault(); logout(); });
+
+    async function loadFaculties() {
+      try {
+        const faculties = await apiFetch("/faculties");
+        const select = document.getElementById("facultyFilter");
+        faculties.forEach(f => {
+          const opt = document.createElement("option");
+          opt.value = f.id;
+          opt.textContent = f.name;
+          select.appendChild(opt);
+        });
+      } catch (e) {
+        document.getElementById("error").textContent = e.message;
+      }
+    }
+
+    async function loadListings() {
+      const faculty = document.getElementById("facultyFilter").value;
+      const grid = document.getElementById("listings");
+      grid.innerHTML = "Loading...";
+      try {
+        const listings = await apiFetch("/listings" + (faculty ? "?faculty=" + faculty : ""));
+        grid.innerHTML = listings.length ? "" : "No listings yet.";
+        listings.forEach(l => {
+          const card = document.createElement("div");
+          card.className = "card";
+          const img = l.imageUrls && l.imageUrls[0]
+            ? `<img src="${l.imageUrls[0]}" style="width:100%;height:140px;object-fit:cover;border-radius:6px;">` : "";
+          card.innerHTML = `${img}<h3>${l.title}</h3><p>${l.price}</p>`;
+          grid.appendChild(card);
+        });
+      } catch (e) {
+        grid.innerHTML = "";
+        document.getElementById("error").textContent = e.message;
+      }
+    }
+
+    document.getElementById("facultyFilter").addEventListener("change", loadListings);
+    loadFaculties();
+    loadListings();
+  </script>
+</body>
+</html>
