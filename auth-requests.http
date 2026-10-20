@@ -1,11 +1,37 @@
-   ### Register
-   POST http://localhost:8080/api/auth/register
-    Content-Type: application/json
+### Register
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
 
-   {"studentId":"S1","email":"a@b.com","password":"password123","fullName":"Test User","facultyId":1}
+{"studentId":"S1","email":"a@b.com","password":"password123","fullName":"Test User","facultyId":9}
 
-   ### Login
-   POST http://localhost:8080/api/auth/login
-   Content-Type: application/json
+### Login (saves the token)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
 
-   {"email":"a@b.com","password":"password123"}
+{"email":"a@b.com","password":"password123"}
+
+> {% client.global.set("token", response.body.token); %}
+
+### All listings
+GET http://localhost:8080/api/listings
+
+### Filtered listings
+GET http://localhost:8080/api/listings?facultyId=9&condition=GOOD&minPrice=10&maxPrice=20&sort=price_asc
+
+### One listing
+GET http://localhost:8080/api/listings/1
+
+### Create listing
+POST http://localhost:8080/api/listings
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{"title":"Physics notes","description":"Printed, 2024","price":5.50,"facultyId":9,"categoryId":1,"itemCondition":"GOOD","imageUrls":["https://labntnnhhqhifdpyrtyi.supabase.co/storage/v1/object/public/item-photos/1792136499021-6eca0cjztcm.jpg"]}
+
+### Delete listing (use a real id)
+DELETE http://localhost:8080/api/listings/2
+Authorization: Bearer {{token}}
+
+### Me
+GET http://localhost:8080/api/me
+Authorization: Bearer {{token}}
