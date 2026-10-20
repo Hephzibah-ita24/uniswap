@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uniswap - Listing Details</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <a class="logo" href="browse.html">Uniswap</a>
+    <div>
+      <a href="browse.html">Browse</a>
+      <a href="inbox.html">Messages</a>
+      <a href="#" id="logoutLink">Logout</a>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container" style="max-width: 600px; margin-top: 40px;">
+    <p class="error" id="error"></p>
+    <div id="listingDetail" class="form-box" style="max-width: 100%;">
+      <p>Loading listing details...</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    requireLogin();
+    document.getElementById("logoutLink").addEventListener("click", (e) => { e.preventDefault(); logout(); });
+
+    async function loadListingDetail() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      const container = document.getElementById("listingDetail");
+
+      if (!id) {
+        container.innerHTML = "<p class='error'>No listing ID provided.</p>";
+        return;
+      }
+
+      try {
+        const listing = await apiFetch(`/listings/${id}`);
+        const img = listing.imageUrls && listing.imageUrls[0]
+          ? `<img src="${listing.imageUrls[0]}" style="width:100%; height:250px; object-fit:cover; border-radius:6px; margin-bottom:14px;">` 
+          : "";
+        
+        container.innerHTML = `
+          ${img}
+          <h2 style="text-align: left; margin-bottom: 10px;">${escapeHtml(listing.title)}</h2>
+          <p style="font-size: 20px; color: #2d3a8c; font-weight: bold; margin-bottom: 14px;">$${listing.price.toFixed(2)}</p>
+          <p style="margin-bottom: 14px; line-height: 1.5; color: #444;">${escapeHtml(listing.description || "No description provided.")}</p>
+          <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Seller: <strong>${escapeHtml(listing.sellerName || "Unknown")}</strong></p>
+          <button class="btn" id="messageBtn">Message Seller</button>
+        `;
+
+        document.getElementById("messageBtn").addEventListener("click", () => {
+          window.location.href = `chat.html?sellerId=${listing.sellerId}&listingId=${listing.id}`;
+        });
+      } catch (e) {
+        container.innerHTML = `<p class="error">Failed to load listing: ${e.message}</p>`;
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    loadListingDetail();
+  </script>
+</body>
+</html>
