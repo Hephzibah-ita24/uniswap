@@ -12,6 +12,7 @@
     <div>
       <a href="browse.html">Browse</a>
       <a href="create-listing.html">Sell</a>
+      <a href="inbox.html">Inbox</a>
       <a href="#" id="logoutLink">Logout</a>
     </div>
   </div>
@@ -29,6 +30,11 @@
   <script>
     requireLogin();
     document.getElementById("logoutLink").addEventListener("click", (e) => { e.preventDefault(); logout(); });
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
 
     async function loadFaculties() {
       try {
@@ -55,9 +61,15 @@
         listings.forEach(l => {
           const card = document.createElement("div");
           card.className = "card";
-          const img = l.imageUrls && l.imageUrls[0]
-            ? `<img src="${l.imageUrls[0]}" style="width:100%;height:140px;object-fit:cover;border-radius:6px;">` : "";
-          card.innerHTML = `${img}<h3>${l.title}</h3><p>${l.price}</p>`;
+          card.style.cursor = "pointer";
+          const urls = l.imageUrls || l.images || [];
+          const first = urls[0] && (urls[0].imageUrl || urls[0].url || urls[0]);
+          const img = typeof first === "string"
+            ? `<img src="${first}" style="width:100%;height:140px;object-fit:cover;border-radius:6px;margin-bottom:8px;">` : "";
+          card.innerHTML = `${img}<h3>${escapeHtml(l.title)}</h3><p>${escapeHtml(l.price)}</p>`;
+          card.addEventListener("click", () => {
+            window.location.href = `listing.html?id=${l.id}`;
+          });
           grid.appendChild(card);
         });
       } catch (e) {
