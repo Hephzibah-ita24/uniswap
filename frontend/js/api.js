@@ -12,7 +12,7 @@ async function apiFetch(path, options = {}) {
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Something went wrong");
+    throw new Error(err.message || err.error || "Something went wrong");
   }
   return res.status === 204 ? null : res.json();
 }
