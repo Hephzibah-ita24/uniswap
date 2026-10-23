@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Uniswap - Browse</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .badge { display:inline-block; font-size:12px; padding:2px 8px; border-radius:10px;
+             background:#e8eaf6; color:#2d3a8c; margin:2px 4px 2px 0; }
+    .thumb { width:100%; height:150px; object-fit:cover; border-radius:6px; margin-bottom:8px; background:#eee; }
+    .noimg { width:100%; height:150px; border-radius:6px; margin-bottom:8px; background:#eee;
+             display:flex; align-items:center; justify-content:center; color:#999; font-size:13px; }
+    .price { color:#2d3a8c; font-weight:bold; margin:4px 0; }
+  </style>
 </head>
 <body>
   <div class="navbar">
@@ -12,13 +20,13 @@
     <div>
       <a href="browse.html">Browse</a>
       <a href="create-listing.html">Sell</a>
-      <a href="inbox.html">Inbox</a>
+      <a href="inbox.html">Chats</a>
       <a href="#" id="logoutLink">Logout</a>
     </div>
   </div>
 
   <div class="container">
-    <label for="facultyFilter">Faculty</label>
+    <label for="facultyFilter">Filter by faculty</label>
     <select id="facultyFilter"><option value="">All faculties</option></select>
     <p class="error" id="error"></p>
     <div class="grid" id="listings" style="margin-top:16px;"></div>
@@ -30,11 +38,6 @@
   <script>
     requireLogin();
     document.getElementById("logoutLink").addEventListener("click", (e) => { e.preventDefault(); logout(); });
-
-    function escapeHtml(str) {
-      if (!str) return "";
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
 
     async function loadFaculties() {
       try {
@@ -57,16 +60,30 @@
       grid.innerHTML = "Loading...";
       try {
         const listings = await apiFetch("/listings" + (faculty ? "?faculty=" + faculty : ""));
-        grid.innerHTML = listings.length ? "" : "No listings yet.";
+        grid.innerHTML = listings.length ? "" : "No listings in this faculty yet.";
         listings.forEach(l => {
           const card = document.createElement("div");
           card.className = "card";
           card.style.cursor = "pointer";
-          const urls = l.imageUrls || l.images || [];
-          const first = urls[0] && (urls[0].imageUrl || urls[0].url || urls[0]);
-          const img = typeof first === "string"
-            ? `<img src="${first}" style="width:100%;height:140px;object-fit:cover;border-radius:6px;margin-bottom:8px;">` : "";
-          card.innerHTML = `${img}<h3>${escapeHtml(l.title)}</h3><p>${escapeHtml(l.price)}</p>`;
+
+          const imgs = listingImages(l);
+          const picture = imgs.length
+            ? `<img class="thumb" src="${imgs[0]}" alt="">`
+            : `<div class="noimg">No photo</div>`;
+
+          const condition = l.itemCondition || l.condition;
+          const facultyName = l.facultyName || (l.faculty && l.faculty.name);
+          const categoryName = l.categoryName || (l.category && l.category.name);
+
+          card.innerHTML = `
+            ${picture}
+            <h3>${escapeHtml(l.title)}</h3>
+            <p class="price">${formatPrice(l.price)}</p>
+            <div>
+              ${condition ? `<span class="badge">${conditionLabel(condition)}</span>` : ""}
+              ${facultyName ? `<span class="badge">${escapeHtml(facultyName)}</span>` : ""}
+              ${categoryName ? `<span class="badge">${escapeHtml(categoryName)}</span>` : ""}
+            </div>`;
           card.addEventListener("click", () => {
             window.location.href = `listing.html?id=${l.id}`;
           });
