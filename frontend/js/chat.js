@@ -4,6 +4,7 @@ const params = new URLSearchParams(window.location.search);
 const conversationId = params.get("id");
 const messagesBox = document.getElementById("messages");
 const errorBox = document.getElementById("error");
+const myId = currentUserId();
 let lastCount = 0;
 
 document.getElementById("logoutLink").addEventListener("click", (e) => {
@@ -12,19 +13,24 @@ document.getElementById("logoutLink").addEventListener("click", (e) => {
 });
 
 if (!conversationId) {
-  errorBox.textContent = "No conversation selected. Open a chat from a listing or your inbox.";
+  errorBox.textContent = "No conversation selected. Open a chat from a listing or from Chats.";
 }
 
-// Read the user id from the JWT so we can tell which messages are mine
-function getMyId() {
+// Header: who am I talking to, and about what
+async function loadHeader() {
+  if (!conversationId) return;
   try {
-    const payload = JSON.parse(atob(getToken().split(".")[1]));
-    return payload.userId || payload.id || payload.sub;
+    const convs = await apiFetch("/conversations");
+    const c = convs.find((x) => String(x.id) === String(conversationId));
+    if (!c) return;
+    const iAmBuyer = String(c.buyerId) === myId;
+    const other = iAmBuyer ? c.sellerName : c.buyerName;
+    document.getElementById("chatTitle").textContent =
+      `Chat with ${other} · ${c.listingTitle}`;
   } catch (e) {
-    return null;
+    // header stays "Chat" if this fails
   }
 }
-const myId = String(getMyId());
 
 function renderMessages(messages) {
   messagesBox.innerHTML = "";
@@ -73,5 +79,6 @@ document.getElementById("messageInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
+loadHeader();
 loadMessages();
-setInterval(loadMessages, 4000); // poll every 4 seconds
+setInterval(loadMessages, 4000);
