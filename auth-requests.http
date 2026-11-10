@@ -35,3 +35,18 @@ Authorization: Bearer {{token}}
 ### Me
 GET http://localhost:8080/api/me
 Authorization: Bearer {{token}}
+
+### Faculty filter (Engineering only)
+GET http://localhost:8080/api/listings?facultyId=9
+
+### Search
+GET http://localhost:8080/api/listings?q=calc
+
+### Two words
+GET http://localhost:8080/api/listings?q=engineering%20textbook
+
+### Search plus filters plus sort
+GET http://localhost:8080/api/listings?q=textbook&condition=USED&maxPrice=30&sort=price_asc
+
+### More like this (use a real id)
+GET http://localhost:8080/api/listings/1/similar

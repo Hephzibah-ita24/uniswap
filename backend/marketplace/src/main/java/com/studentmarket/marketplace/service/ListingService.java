@@ -1,4 +1,6 @@
 package com.studentmarket.marketplace.service;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.studentmarket.marketplace.dto.ListingResponse;
 import com.studentmarket.marketplace.entity.*;
@@ -35,7 +37,8 @@ public class ListingService {
 
     @Transactional(readOnly = true)
     public List<ListingResponse> search(Long facultyId, Long categoryId, String condition,
-                                        BigDecimal minPrice, BigDecimal maxPrice, String sort) {
+                                        BigDecimal minPrice, BigDecimal maxPrice, String sort,
+                                        String searchText) {
 
         Specification<Listing> spec = (root, query, cb) -> cb.equal(root.get("status"), "AVAILABLE");
 
@@ -55,6 +58,17 @@ public class ListingService {
         if (maxPrice != null) {
             spec = spec.and((r, q, cb) -> cb.lessThanOrEqualTo(r.<BigDecimal>get("price"), maxPrice));
         }
+        if (searchText != null && !searchText.isBlank()) {
+            String text = searchText.trim();
+            if (text.length() > 100) text = text.substring(0, 100);
+            String[] words = text.toLowerCase().split("\\s+");
+            for (int i = 0; i < Math.min(words.length, 5); i++) {
+                String pattern = "%" + escapeLike(words[i]) + "%";
+                spec = spec.and((r, q, cb) -> cb.or(
+                        cb.like(cb.lower(r.<String>get("title")), pattern, '\\'),
+                        cb.like(cb.lower(r.<String>get("description")), pattern, '\\')));
+            }
+        }
 
         Sort order = switch (sort == null ? "recent" : sort) {
             case "price_asc" -> Sort.by("price").ascending();
@@ -63,6 +77,10 @@ public class ListingService {
         };
 
         return listingRepository.findAll(spec, order).stream().map(this::toResponse).toList();
+    }
+
+    private String escapeLike(String s) {
+        return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
     @Transactional(readOnly = true)
@@ -129,5 +147,26 @@ public class ListingService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your listing");
         }
         listingRepository.delete(l);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ListingResponse> similar(Long id) {
+        Listing base = listingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+
+        Specification<Listing> spec = (r, q, cb) -> cb.equal(r.get("status"), "AVAILABLE");
+        spec = spec.and((r, q, cb) -> cb.notEqual(r.get("id"), id));
+
+        if (base.getCategory() != null) {
+            Long sameCategory = base.getCategory().getId();
+            spec = spec.and((r, q, cb) -> cb.equal(r.get("category").get("id"), sameCategory));
+        } else {
+            Long sameFaculty = base.getFaculty().getId();
+            spec = spec.and((r, q, cb) -> cb.equal(r.get("faculty").get("id"), sameFaculty));
+        }
+
+        Pageable top8 = PageRequest.of(0, 8, Sort.by("createdAt").descending());
+        return listingRepository.findAll(spec, top8).getContent().stream()
+                .map(this::toResponse).toList();
     }
 }
