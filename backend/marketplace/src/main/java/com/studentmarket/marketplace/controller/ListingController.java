@@ -30,8 +30,14 @@ public class ListingController {
             @RequestParam(name = "condition", required = false) String condition,
             @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
             @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
-            @RequestParam(name = "sort", required = false) String sort) {
-        return listingService.search(facultyId, categoryId, condition, minPrice, maxPrice, sort);
+            @RequestParam(name = "sort", required = false) String sort,
+            @RequestParam(name = "q", required = false) String q) {
+        return listingService.search(facultyId, categoryId, condition, minPrice, maxPrice, sort, q);
+    }
+
+    @GetMapping("/{id}/similar")
+    public List<ListingResponse> similar(@PathVariable("id") Long id) {
+        return listingService.similar(id);
     }
 
     @GetMapping("/{id}")
