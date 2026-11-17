@@ -95,3 +95,38 @@ input, select, textarea {
   .navbar { flex-wrap: wrap; gap: 8px; }
   .navbar a { margin-left: 10px; }
 }
+/* ---------- Design polish ---------- */
+body { font-family: "Segoe UI", system-ui, Arial, sans-serif; background: #f3f4fa; }
+
+.navbar { background: linear-gradient(90deg, #2d3a8c, #4a56c4);
+          box-shadow: 0 2px 10px rgba(0,0,0,.15); position: sticky; top: 0; z-index: 10; }
+.navbar .logo { letter-spacing: .5px; }
+
+.hero { background: linear-gradient(135deg, #2d3a8c, #6a5acd); color: #fff;
+        text-align: center; padding: 40px 16px 48px; }
+.hero h1 { font-size: 32px; margin-bottom: 8px; }
+.hero p { opacity: .9; font-size: 16px; }
+.hero + .container { margin-top: -26px; }
+
+.search-row input { box-shadow: 0 4px 14px rgba(0,0,0,.12); border: none; }
+
+.card { border-radius: 14px; overflow: hidden; padding: 0; }
+.card > :not(.thumb):not(.noimg) { margin-left: 14px; margin-right: 14px; }
+.card h3 { margin-top: 10px; font-size: 17px; }
+.card > div:last-child { margin-bottom: 14px; }
+.card .thumb, .card .noimg { border-radius: 0; margin-bottom: 0; height: 170px; }
+.card .thumb { transition: transform .3s; }
+.card:hover .thumb { transform: scale(1.04); }
+.card { overflow: hidden; }
+
+.badge { font-weight: 500; }
+.price { font-size: 18px; }
+
+.btn { border-radius: 8px; transition: background .15s, transform .1s; }
+.btn:active { transform: scale(.98); }
+
+.form-box { border-radius: 14px; }
+
+@media (max-width: 600px) {
+  .hero h1 { font-size: 24px; }
+}
