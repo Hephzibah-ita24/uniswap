@@ -70,8 +70,13 @@
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
+  <script src="js/mock-data.js"></script>
   <script>
-    requireLogin();
+    if (!DEMO_MODE) {
+  requireLogin();
+}
+
+const browseFetch = DEMO_MODE ? mockApiFetch : apiFetch;
 
     let allListings = [];
     let activeCategory = "";
@@ -83,7 +88,7 @@
 
     async function loadFaculties() {
       try {
-        const faculties = await apiFetch("/faculties");
+        const faculties = await browseFetch("/faculties");
         const select = document.getElementById("facultyFilter");
         faculties.forEach(f => {
           const opt = document.createElement("option");
@@ -98,7 +103,7 @@
       const box = document.getElementById("chips");
       let names = [];
       try {
-        const cats = await apiFetch("/categories");
+        const cats = await browseFetch("/categories");
         names = cats.map(c => c.name);
       } catch (e) { /* only the All chip */ }
       box.innerHTML = "";
@@ -120,7 +125,7 @@
       const grid = document.getElementById("listings");
       grid.innerHTML = "Loading...";
       try {
-        allListings = await apiFetch("/listings");
+        allListings = await browseFetch("/listings");
         render();
       } catch (e) {
         grid.innerHTML = "";
