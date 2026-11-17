@@ -15,29 +15,67 @@
   </style>
 </head>
 <body>
-  <div class="navbar">
-    <a class="logo" href="browse.html">Uniswap</a>
-    <div>
-      <a href="browse.html">Browse</a>
-      <a href="create-listing.html">Sell</a>
-      <a href="inbox.html">Chats</a>
-      <a href="#" id="logoutLink">Logout</a>
-    </div>
-  </div>
+  <div id="navbar"></div>
 
   <div class="container">
-    <label for="facultyFilter">Filter by faculty</label>
-    <select id="facultyFilter"><option value="">All faculties</option></select>
+    <div class="search-row">
+      <input type="text" id="search" placeholder="Search textbooks, clothes, electronics...">
+    </div>
+
+    <div class="chips" id="chips"></div>
+
+    <div class="filters">
+      <div>
+        <label for="facultyFilter">Faculty</label>
+        <select id="facultyFilter"><option value="">All faculties</option></select>
+      </div>
+      <div>
+        <label for="minPrice">Min price</label>
+        <input type="number" id="minPrice" min="0" placeholder="0">
+      </div>
+      <div>
+        <label for="maxPrice">Max price</label>
+        <input type="number" id="maxPrice" min="0" placeholder="Any">
+      </div>
+      <div>
+        <label for="conditionFilter">Condition</label>
+        <select id="conditionFilter">
+          <option value="">Any</option>
+          <option value="NEW">New</option>
+          <option value="GOOD">Good</option>
+          <option value="USED">Used</option>
+        </select>
+      </div>
+      <div>
+        <label for="sortBy">Sort by</label>
+        <select id="sortBy">
+          <option value="newest">Newest</option>
+          <option value="priceAsc">Price: low to high</option>
+          <option value="priceDesc">Price: high to low</option>
+        </select>
+      </div>
+      <button class="btn-light" id="resetBtn">Reset</button>
+    </div>
+
     <p class="error" id="error"></p>
-    <div class="grid" id="listings" style="margin-top:16px;"></div>
+    <p class="result-count" id="count"></p>
+    <div class="grid" id="listings"></div>
   </div>
 
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
   <script>
     requireLogin();
-    document.getElementById("logoutLink").addEventListener("click", (e) => { e.preventDefault(); logout(); });
+
+    let allListings = [];
+    let activeCategory = "";
+
+    function facultyOf(l) { return l.facultyName || (l.faculty && l.faculty.name) || ""; }
+    function facultyIdOf(l) { return l.facultyId ?? (l.faculty && l.faculty.id); }
+    function categoryOf(l) { return l.categoryName || (l.category && l.category.name) || ""; }
+    function conditionOf(l) { return l.itemCondition || l.condition || ""; }
 
     async function loadFaculties() {
       try {
@@ -49,54 +87,122 @@
           opt.textContent = f.name;
           select.appendChild(opt);
         });
-      } catch (e) {
-        document.getElementById("error").textContent = e.message;
-      }
+      } catch (e) { /* filter stays on "All faculties" */ }
+    }
+
+    async function loadCategories() {
+      const box = document.getElementById("chips");
+      let names = [];
+      try {
+        const cats = await apiFetch("/categories");
+        names = cats.map(c => c.name);
+      } catch (e) { /* only the All chip */ }
+      box.innerHTML = "";
+      ["All", ...names].forEach(name => {
+        const b = document.createElement("button");
+        b.className = "chip" + (name === "All" ? " active" : "");
+        b.textContent = name;
+        b.addEventListener("click", () => {
+          activeCategory = name === "All" ? "" : name;
+          box.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+          b.classList.add("active");
+          render();
+        });
+        box.appendChild(b);
+      });
     }
 
     async function loadListings() {
-      const faculty = document.getElementById("facultyFilter").value;
       const grid = document.getElementById("listings");
       grid.innerHTML = "Loading...";
       try {
-        const listings = await apiFetch("/listings" + (faculty ? "?faculty=" + faculty : ""));
-        grid.innerHTML = listings.length ? "" : "No listings in this faculty yet.";
-        listings.forEach(l => {
-          const card = document.createElement("div");
-          card.className = "card";
-          card.style.cursor = "pointer";
-
-          const imgs = listingImages(l);
-          const picture = imgs.length
-            ? `<img class="thumb" src="${imgs[0]}" alt="">`
-            : `<div class="noimg">No photo</div>`;
-
-          const condition = l.itemCondition || l.condition;
-          const facultyName = l.facultyName || (l.faculty && l.faculty.name);
-          const categoryName = l.categoryName || (l.category && l.category.name);
-
-          card.innerHTML = `
-            ${picture}
-            <h3>${escapeHtml(l.title)}</h3>
-            <p class="price">${formatPrice(l.price)}</p>
-            <div>
-              ${condition ? `<span class="badge">${conditionLabel(condition)}</span>` : ""}
-              ${facultyName ? `<span class="badge">${escapeHtml(facultyName)}</span>` : ""}
-              ${categoryName ? `<span class="badge">${escapeHtml(categoryName)}</span>` : ""}
-            </div>`;
-          card.addEventListener("click", () => {
-            window.location.href = `listing.html?id=${l.id}`;
-          });
-          grid.appendChild(card);
-        });
+        allListings = await apiFetch("/listings");
+        render();
       } catch (e) {
         grid.innerHTML = "";
         document.getElementById("error").textContent = e.message;
       }
     }
 
-    document.getElementById("facultyFilter").addEventListener("change", loadListings);
+    function render() {
+      const q = document.getElementById("search").value.trim().toLowerCase();
+      const facSel = document.getElementById("facultyFilter");
+      const facVal = facSel.value;
+      const facText = facVal ? facSel.options[facSel.selectedIndex].textContent : "";
+      const minP = parseFloat(document.getElementById("minPrice").value);
+      const maxP = parseFloat(document.getElementById("maxPrice").value);
+      const cond = document.getElementById("conditionFilter").value;
+      const sort = document.getElementById("sortBy").value;
+
+      let list = allListings.filter(l => {
+        const price = Number(l.price);
+        if (q) {
+          const hay = `${l.title} ${l.description || ""} ${categoryOf(l)} ${facultyOf(l)}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (activeCategory && categoryOf(l) !== activeCategory) return false;
+        if (facVal) {
+          const fid = facultyIdOf(l);
+          const matches = fid != null ? String(fid) === facVal : facultyOf(l) === facText;
+          if (!matches) return false;
+        }
+        if (!isNaN(minP) && price < minP) return false;
+        if (!isNaN(maxP) && price > maxP) return false;
+        if (cond && conditionOf(l) !== cond) return false;
+        return true;
+      });
+
+      if (sort === "priceAsc") list.sort((a, b) => Number(a.price) - Number(b.price));
+      else if (sort === "priceDesc") list.sort((a, b) => Number(b.price) - Number(a.price));
+      else list.sort((a, b) => (b.createdAt ? String(b.createdAt).localeCompare(String(a.createdAt)) : b.id - a.id));
+
+      const grid = document.getElementById("listings");
+      document.getElementById("count").textContent =
+        list.length + (list.length === 1 ? " item found" : " items found");
+      grid.innerHTML = list.length ? "" : "<p>No items match your search. Try changing the filters.</p>";
+
+      list.forEach(l => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "pointer";
+        const imgs = listingImages(l);
+        const picture = imgs.length
+          ? `<img class="thumb" src="${imgs[0]}" alt="">`
+          : `<div class="noimg">No photo</div>`;
+        const c = conditionOf(l), f = facultyOf(l), cat = categoryOf(l);
+        card.innerHTML = `
+          ${picture}
+          <h3>${escapeHtml(l.title)}</h3>
+          <p class="price">${formatPrice(l.price)}</p>
+          <div>
+            ${c ? `<span class="badge">${conditionLabel(c)}</span>` : ""}
+            ${f ? `<span class="badge">${escapeHtml(f)}</span>` : ""}
+            ${cat ? `<span class="badge">${escapeHtml(cat)}</span>` : ""}
+          </div>`;
+        card.addEventListener("click", () => { window.location.href = `listing.html?id=${l.id}`; });
+        grid.appendChild(card);
+      });
+    }
+
+    ["search", "minPrice", "maxPrice"].forEach(id =>
+      document.getElementById(id).addEventListener("input", render));
+    ["facultyFilter", "conditionFilter", "sortBy"].forEach(id =>
+      document.getElementById(id).addEventListener("change", render));
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("search").value = "";
+      document.getElementById("minPrice").value = "";
+      document.getElementById("maxPrice").value = "";
+      document.getElementById("facultyFilter").value = "";
+      document.getElementById("conditionFilter").value = "";
+      document.getElementById("sortBy").value = "newest";
+      activeCategory = "";
+      document.querySelectorAll(".chip").forEach((c, i) => c.classList.toggle("active", i === 0));
+      render();
+    });
+
     loadFaculties();
+    loadCategories();
     loadListings();
   </script>
 </body>
