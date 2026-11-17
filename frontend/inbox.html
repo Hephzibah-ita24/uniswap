@@ -3,22 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Uniswap - Inbox</title>
+  <title>Uniswap - Chats</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="navbar">
-    <a class="logo" href="browse.html">Uniswap</a>
-    <div>
-      <a href="browse.html">Browse</a>
-      <a href="create-listing.html">Sell</a>
-      <a href="inbox.html">Chats</a>
-      <a href="#" id="logoutLink">Logout</a>
-    </div>
-  </div>
+  <div id="navbar"></div>
 
   <div class="container" style="max-width: 600px; margin-top: 30px;">
-    <h2>Your Conversations</h2>
+    <h2>Your Chats</h2>
     <p class="error" id="error"></p>
     <div id="conversationsList" style="margin-top: 16px;">
       <p>Loading conversations...</p>
@@ -28,14 +20,9 @@
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
   <script>
     requireLogin();
-    document.getElementById("logoutLink").addEventListener("click", (e) => { e.preventDefault(); logout(); });
-
-    function escapeHtml(str) {
-      if (!str) return "";
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
 
     async function loadConversations() {
       const listEl = document.getElementById("conversationsList");
@@ -61,7 +48,7 @@
           listEl.appendChild(item);
         });
       } catch (e) {
-        listEl.innerHTML = `<p class="error">Failed to load conversations: ${e.message}</p>`;
+        listEl.innerHTML = `<p class="error">Failed to load conversations: ${escapeHtml(e.message)}</p>`;
       }
     }
 
