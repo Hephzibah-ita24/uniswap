@@ -1,5 +1,6 @@
 package com.studentmarket.marketplace.controller;
 import com.studentmarket.marketplace.dto.CreateListingRequest;
+import com.studentmarket.marketplace.dto.UpdateListingRequest; // NEW
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,12 @@ public class ListingController {
         return listingService.search(facultyId, categoryId, condition, minPrice, maxPrice, sort, q);
     }
 
+    // NEW: my own listings (login required)
+    @GetMapping("/mine")
+    public List<ListingResponse> mine(@AuthenticationPrincipal User user) {
+        return listingService.mine(user.getEmail());
+    }
+
     @GetMapping("/{id}/similar")
     public List<ListingResponse> similar(@PathVariable("id") Long id) {
         return listingService.similar(id);
@@ -49,6 +56,14 @@ public class ListingController {
                                                   @AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(listingService.create(user.getEmail(), req));
+    }
+
+    // NEW: edit a listing (seller only)
+    @PutMapping("/{id}")
+    public ListingResponse update(@PathVariable("id") Long id,
+                                  @Valid @RequestBody UpdateListingRequest req,
+                                  @AuthenticationPrincipal User user) {
+        return listingService.update(user.getEmail(), id, req);
     }
 
     @DeleteMapping("/{id}")

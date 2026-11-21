@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import com.studentmarket.marketplace.dto.CreateListingRequest;
+import com.studentmarket.marketplace.dto.UpdateListingRequest; // NEW
 import com.studentmarket.marketplace.repository.CategoryRepository;
 import com.studentmarket.marketplace.repository.FacultyRepository;
 import com.studentmarket.marketplace.repository.UserRepository;
@@ -136,6 +137,34 @@ public class ListingService {
             img.setPrimary(i == 0);
             l.getImages().add(img);
         }
+        return toResponse(listingRepository.save(l));
+    }
+
+    // NEW: all of my listings, including sold ones
+    @Transactional(readOnly = true)
+    public List<ListingResponse> mine(String email) {
+        return listingRepository.findBySellerEmailOrderByIdDesc(email)
+                .stream().map(this::toResponse).toList();
+    }
+
+    // NEW: edit a listing (seller only)
+    @Transactional
+    public ListingResponse update(String email, Long id, UpdateListingRequest req) {
+        Listing l = listingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+        if (!l.getSeller().getEmail().equals(email)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your listing");
+        }
+        if (req.categoryId() != null) {
+            Category category = categoryRepository.findById(req.categoryId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category ID"));
+            l.setCategory(category);
+        }
+        l.setTitle(req.title());
+        l.setDescription(req.description());
+        l.setPrice(req.price());
+        l.setItemCondition(req.itemCondition());
+        if (req.status() != null) l.setStatus(req.status());
         return toResponse(listingRepository.save(l));
     }
 

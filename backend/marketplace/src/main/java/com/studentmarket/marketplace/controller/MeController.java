@@ -11,7 +11,10 @@ import java.util.Map;
 public class MeController {
 
     @GetMapping("/api/me")
-    public Map<String, String> me(@AuthenticationPrincipal User user) {
-        return Map.of("email", user.getEmail());
+    public Map<String, Object> me(@AuthenticationPrincipal User user) {
+        return Map.of(
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "fullName", user.getFullName());
     }
 }
