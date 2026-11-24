@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uniswap - My Listings</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .heading { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    .heading a { text-decoration:none; }
+    .thumb,.noimg { width:100%; height:170px; object-fit:cover; background:#eee; }
+    .noimg { display:grid; place-items:center; color:#666; }
+    .price { color:#2d3a8c; font-weight:bold; margin-top:6px; }
+    .actions { display:flex; flex-wrap:wrap; gap:8px; padding-top:12px; }
+    .actions a { text-decoration:none; }
+    .delete { color:#c0392b; }
+    .status { margin-top:8px; font-size:14px; }
+    #editBox { margin:20px auto; max-width:520px; }
+    #notice { color:#246b38; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+  <main class="container">
+    <div class="heading">
+      <h1>My Listings</h1>
+      <a class="btn-light" href="create-listing.html">+ Create listing</a>
+    </div>
+    <p class="error" id="error" role="alert"></p>
+    <p id="notice" role="status"></p>
+    <p class="result-count" id="count" aria-live="polite"></p>
+    <div class="grid" id="listings"></div>
+    <section class="form-box" id="editBox" hidden>
+      <h2>Edit listing</h2>
+      <form id="editForm">
+        <label for="title">Title</label>
+        <input id="title" required maxlength="150">
+        <label for="description">Description</label>
+        <textarea id="description" rows="4"></textarea>
+        <label for="price">Price</label>
+        <input id="price" type="number" min="0.01" max="99999999.99" step="0.01" required>
+        <label for="category">Category</label>
+        <select id="category"></select>
+        <label for="condition">Condition</label>
+        <select id="condition" required>
+          <option value="NEW">New</option><option value="GOOD">Good</option><option value="USED">Used</option>
+        </select>
+        <p class="error" id="editError" role="alert"></p>
+        <button class="btn" id="saveBtn" type="submit">Save changes</button>
+        <button class="btn-light" id="cancelBtn" type="button" style="margin-top:10px">Cancel</button>
+      </form>
+    </section>
+  </main>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/my-listings.js"></script>
+</body>
+</html>
